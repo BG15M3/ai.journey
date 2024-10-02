@@ -149,6 +149,71 @@
 
     <p><strong>If you’re interested in learning how you can use AI and automation in your own work, stay tuned as I continue to share my AI journey. And if you want to see how my returns calculation system works, I’ll be breaking it down step by step in future posts.</strong></p>
 </article>
+<article class="blog-entry">
+    <h3>Harnessing AI: Building Drive Scan and CSV Upload Python Scripts</h3>
+    <p><strong>Date:</strong> October 1, 2024</p>
+    <p>As I dive deeper into my AI and Python journey, I've realized the value of automating tasks that were once tedious. One recent project I worked on was creating a Python script that scans my disk drives and generates CSV files with details of the contents. I then built another script to upload those CSVs into SQL Server, making file management and data tracking more efficient.</p>
+    
+    <h4>The Challenge: Tracking Disk Drive Contents</h4>
+    <p>Managing file inventories across multiple disk drives can be overwhelming, especially when it comes to keeping track of what’s stored where. I needed a solution that would automate this process, allowing me to quickly generate an up-to-date file inventory without manually checking through all the directories.</p>
+
+    <h4>Developing the Drive Scan and CSV Creation Script</h4>
+    <p>I turned to Python to automate this task. Using the <code>os</code> and <code>csv</code> libraries, I wrote a script that scans specified drives, gathers file information, and saves the details into a CSV file. This gave me an easily accessible record of all the files on a given drive.</p>
+
+    <pre><code>
+import os
+import csv
+
+def scan_drive_and_create_csv(directory, output_csv):
+    with open(output_csv, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(["File Path", "File Name"])
+
+        for root, dirs, files in os.walk(directory):
+            for file_name in files:
+                writer.writerow([os.path.join(root, file_name), file_name])
+
+    print(f"CSV created: {output_csv}")
+
+# Example usage
+directory_to_scan = '/path/to/your/directory'
+output_csv_file = 'drive_contents.csv'
+scan_drive_and_create_csv(directory_to_scan, output_csv_file)
+    </code></pre>
+
+    <h4>Uploading the CSVs to SQL Server</h4>
+    <p>Once the CSV files are generated, the next step is to upload them to SQL Server. This enables centralized storage and easy access to the data. Using the <code>pandas</code> and <code>pyodbc</code> libraries, I created a script to automate the CSV-to-database upload process.</p>
+
+    <pre><code>
+import pandas as pd
+import pyodbc
+
+def upload_csv_to_sql_server(csv_file, connection_string):
+    df = pd.read_csv(csv_file)
+    with pyodbc.connect(connection_string) as conn:
+        cursor = conn.cursor()
+        for index, row in df.iterrows():
+            cursor.execute(
+                "INSERT INTO your_table_name (file_path, file_name) VALUES (?, ?)",
+                row['File Path'], row['File Name']
+            )
+        conn.commit()
+    print(f"{csv_file} uploaded successfully!")
+
+# Example usage
+connection_string = "Driver={SQL Server};Server=your_server;Database=your_database;UID=your_username;PWD=your_password;"
+upload_csv_to_sql_server(output_csv_file, connection_string)
+    </code></pre>
+
+    <h4>The Results: Streamlined File Management</h4>
+    <p>By automating the drive scanning, CSV creation, and upload processes, I’ve significantly reduced the time and effort needed to track my file inventories. With just a few scripts, I can now generate CSV reports of my disk drives and upload them to SQL Server for safekeeping.</p>
+
+    <h4>Looking Ahead: Exploring More Automation</h4>
+    <p>This project has been a great example of how Python can simplify complex tasks. Moving forward, I’m excited to explore more ways to leverage AI and automation in my workflow, enhancing productivity and efficiency even further.</p>
+
+    <p><strong>Stay tuned for more insights and updates as I continue to explore AI and Python in my projects!</strong></p>
+</article>
+
 
     </section>
 
