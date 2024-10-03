@@ -214,6 +214,58 @@ upload_csv_to_sql_server(output_csv_file, connection_string)
     <p><strong>Stay tuned for more insights and updates as I continue to explore AI and Python in my projects!</strong></p>
 </article>
 
+    <div class="blog-entry">
+    <h2>Creating JavaScript for PARS Spreadsheet Data Entry</h2>
+    
+    <h3>Introduction</h3>
+    <p>In this entry, I’ll share my experience creating a JavaScript function to manage data entry for the PARS spreadsheet. This function streamlines the process by automatically hiding and showing specific columns based on user selections in the "Store" column. This approach enhances usability and keeps the spreadsheet organized.</p>
+    
+    <h3>Objective</h3>
+    <p>The main objective was to create a dynamic data entry system in Google Sheets that allows users to select a store name and automatically reveals the relevant data columns. This improves the efficiency of data management and ensures users only see the information they need.</p>
+    
+    <h3>Implementation</h3>
+    
+    <h4>1. Setting Up the Trigger:</h4>
+    <p>The function utilizes the <code>onEdit(e)</code> trigger to listen for changes in the spreadsheet. This trigger activates whenever a user edits the spreadsheet, allowing us to respond accordingly.</p>
+    <pre><code>function onEdit(e) {
+    var sheet = e.source.getActiveSheet();
+    var range = e.range;
+
+    // Check if the edit was made in the "Store" column (Column B)
+    if (range.getColumn() == 2 && range.getRow() > 1) {
+        var store = range.getValue().toString().trim();</code></pre>
+    
+    <h4>2. Hiding and Showing Columns:</h4>
+    <p>The function first hides all columns to maintain a clean view. Then, it reveals specific columns based on the selected store. This is achieved through a series of conditional statements that check the store name and show the appropriate columns.</p>
+    <pre><code>// Hide all columns first
+    sheet.hideColumns(1, sheet.getLastColumn());
+
+    // Show specific columns based on the store selected
+    if (store == 'AFC') {
+        var columnsToShow = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 31, 32, 33, 34, 51, 52, 53, 54];
+        for (var i = 0; i &lt; columnsToShow.length; i++) {
+            sheet.showColumns(columnsToShow[i]);
+        }
+    } 
+    // Additional else if statements for other stores...</code></pre>
+    
+    <h4>3. Adding New Stores:</h4>
+    <p>As I added more stores, I continued the pattern of defining specific columns for each store. For example, for "M Plaza," I included columns 63 to 66.</p>
+    <pre><code>} else if (store == 'M Plaza') {
+        var columnsToShowMPlaza = [1, 2, 63, 64, 65, 66];
+        for (var i = 0; i &lt; columnsToShowMPlaza.length; i++) {
+            sheet.showColumns(columnsToShowMPlaza[i]);
+        }
+    }</code></pre>
+    
+    <h3>Conclusion</h3>
+    <p>Creating this JavaScript function for the PARS spreadsheet has significantly improved data entry efficiency. Users can now easily navigate the spreadsheet, seeing only the columns relevant to their selected store. This project not only enhances usability but also showcases the power of Google Apps Script in automating tasks within Google Sheets.</p>
+    
+    <h3>Future Enhancements</h3>
+    <p>Looking ahead, I plan to add more functionality, such as validating user input and integrating additional features to further streamline data entry. I am excited to see how these improvements will enhance the user experience.</p>
+</div>
+
+
 
     </section>
 
