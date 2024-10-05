@@ -265,6 +265,53 @@ upload_csv_to_sql_server(output_csv_file, connection_string)
     <p>Looking ahead, I plan to add more functionality, such as validating user input and integrating additional features to further streamline data entry. I am excited to see how these improvements will enhance the user experience.</p>
 </div>
 
+<article class="blog-entry">
+    <h2>How I Automated Randomized Photo Slideshows with a Simple Script</h2>
+    <p>Have you ever wanted to take control of your photo collection and make viewing them more interesting? That’s exactly what I set out to do when I automated the process of renaming my images and creating a randomized slideshow. What started as a simple organizational task turned into a fun project that brought my photos to life in unexpected ways.</p>
+
+    <h3>Step 1: Organizing the Photos</h3>
+    <p>It all started with a folder I created on my PC called <strong>rename_photos</strong>. I had a collection of images, and while flipping through them manually was fine, I wanted to automate the process and add some randomness. The goal was to view these images as a slideshow but with a twist: seeing them in a different order every time.</p>
+
+    <h3>Step 2: Writing the Script to Rename Files</h3>
+    <p>I knew that randomizing the image order was going to require renaming the files in the folder. So, I wrote a Python script to shuffle the image files and rename them in a new sequence every time the script ran. This way, the slideshow wouldn’t just be in the same order, but it would surprise me each time. Here's the script I used:</p>
+    <pre>
+import os
+import random
+
+def rename_photos(directory):
+    files = os.listdir(directory)
+    random.shuffle(files)
+    
+    for i, file in enumerate(files):
+        ext = os.path.splitext(file)[1]  # Get the file extension
+        new_name = f"photo_{i + 1}{ext}"
+        os.rename(os.path.join(directory, file), os.path.join(directory, new_name))
+
+# Specify the folder path
+folder_path = 'rename_photos'
+rename_photos(folder_path)
+    </pre>
+    <p>This script was a game changer! It shuffled the file names and renamed them in the format <strong>photo_1.jpg</strong>, <strong>photo_2.jpg</strong>, and so on. The randomness came from using Python’s <strong>random.shuffle()</strong> function, which means the photos now show up in different orders each time I run the script.</p>
+
+    <h3>Step 3: Running the Slideshow</h3>
+    <p>After the photos were renamed, it was time to enjoy the slideshow. Running it was easy and added a fresh layer of excitement each time I went through my images:</p>
+    <ul>
+        <li>First, I opened the <strong>rename_photos</strong> folder in File Explorer.</li>
+        <li>Then, I selected all the images by pressing <strong>Ctrl + A</strong>.</li>
+        <li>Right-clicking one of the images, I chose <strong>Open with &gt; Photos</strong>.</li>
+        <li>Finally, I hit <strong>F5</strong> in the Photos app, and voila—an instant slideshow with images displayed in a new order every time!</li>
+    </ul>
+
+    <h3>Why This Project Was Fun</h3>
+    <p>What I loved about this little automation project was that it allowed me to rediscover my photo collection in an entirely new way. The randomness brought back memories I hadn't seen in a while, and the element of surprise kept me entertained. Plus, it was satisfying to see how a simple script could enhance my experience of something as simple as a slideshow.</p>
+
+    <h3>What’s Next?</h3>
+    <p>This experiment sparked more ideas for how I can automate or enhance everyday tasks, especially in terms of AI and coding. I’m already working on more projects that involve AI-driven automation, so stay tuned if you’re interested in seeing where this journey takes me!</p>
+    
+    <p>If you're curious about how AI and automation can simplify your life, feel free to explore my other posts. I’m always learning something new and love sharing tips along the way.</p>
+</article>
+
+
 
 
     </section>
