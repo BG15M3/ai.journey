@@ -1,0 +1,773 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bakery Invoice Calculator</title>
+<style>
+  :root {
+    --primary: #ff0000;  /* Changed to red */
+    --secondary: #000000; /* Changed to black */
+    --light: #ffffff;    /* Changed to white */
+  }
+
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--secondary); /* Black background */
+    margin: 0;
+    padding: 10px;
+    font-size: 14px;
+    color: var(--secondary);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+  }
+
+  .container {
+    width: 4.5in;
+    margin: 0 auto;
+    background: var(--light);
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(255,0,0,0.3); /* Red glow */
+  }
+
+  h1 {
+    color: var(--primary); /* Red heading */
+    text-align: center;
+    margin: 10px 0;
+    font-size: 1.5em;
+  }
+
+  h3 {
+    margin: 5px 0;
+    font-size: 1.2em;
+  }
+
+  .invoice-form {
+    display: grid;
+    gap: 5px;
+  }
+
+  .form-group {
+    display: grid;
+    gap: 5px;
+  }
+
+  label {
+    font-weight: bold;
+    color: var(--secondary);
+  }
+
+  input, select {
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+
+  .return-items {
+    display: grid;
+    gap: 2px;
+  }
+
+  .return-item {
+    display: grid;
+    grid-template-columns: 1fr 80px 60px;
+    gap: 5px;
+    align-items: center;
+    padding: 3px;
+    background: #f9f9f9;
+    border: 1px solid var(--secondary); /* Black border */
+    border-radius: 4px;
+  }
+
+  .item-name {
+    font-weight: bold;
+    color: var(--secondary); /* Black text */
+    font-size: 0.9em;
+  }
+
+  .summary {
+    margin-top: 5px;
+    padding: 5px;
+    background: var(--secondary); /* Black background */
+    color: var(--light);        /* White text */
+    border-radius: 4px;
+  }
+
+  .summary p {
+    margin: 3px 0;
+    color: var(--light);       /* White text */
+  }
+
+  .amount {
+    font-weight: bold;
+    color: var(--primary);     /* Red amounts */
+  }
+
+  select.item-quantity {
+    width: 70px;
+  }
+
+  .item-total {
+    text-align: right;
+    font-size: 0.9em;
+  }
+
+  .print-report-btn {
+    background: var(--primary); /* Red button */
+    color: var(--light);       /* White text */
+    border: 2px solid var(--secondary); /* Black border */
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+    margin-right: 5px; /* Added spacing between buttons */
+    font-weight: bold;
+    transition: all 0.3s ease;
+  }
+
+  .print-report-btn:hover {
+    background: var(--secondary); /* Black on hover */
+    color: var(--primary);       /* Red text on hover */
+    opacity: 1;
+  }
+
+  .report-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+
+  .report-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 4in;
+    max-height: 90vh;
+    overflow-y: auto;
+    border: 2px solid var(--primary); /* Red border */
+  }
+
+  .report-item {
+    display: flex;
+    justify-content: flex-start;
+    padding: 3px 0;
+    border-bottom: 1px solid var(--primary); /* Red separator */
+  }
+
+  .close-btn {
+    float: right;
+    cursor: pointer;
+    font-size: 1.2em;
+    color: var(--primary); /* Red close button */
+  }
+
+  .close-btn:hover {
+    color: var(--secondary); /* Black on hover */
+  }
+
+  .price-editor-row {
+    display: grid;
+    grid-template-columns: 1fr 80px 30px;
+    gap: 10px;
+    margin: 5px 0;
+    align-items: center;
+  }
+
+  .price-editor-row input {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid var(--primary);
+    border-radius: 4px;
+  }
+  
+  .add-item-btn {
+    background: var(--primary); 
+    color: var(--light);      
+    border: 2px solid var(--secondary);
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    width: 100%;
+  }
+
+  .add-item-btn:hover {
+    background: var(--secondary); 
+    color: var(--primary);    
+    opacity: 1;
+  }
+  
+  .delete-item-btn {
+    color: var(--primary);
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-left: 5px;
+  }
+
+  .delete-item-btn:hover {
+    color: var(--secondary);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>&#x1f956; Bakery Returns</h1>
+  
+  <div class="invoice-form">
+    <div class="form-group">
+      <label>Invoice Amount (&#x24;)</label>
+      <input type="number" id="invoiceAmount" step="0.01" min="0">
+    </div>
+
+    <div class="return-items" id="returnItems">
+      <h3>Return Items</h3>
+      <div class="return-item">
+        <span class="item-name">Brown Rice Bread - &#x24;8.50</span>
+        <select class="item-quantity" onchange="calculateTotals()">
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+          <option value="13">13</option>
+          <option value="14">14</option>
+          <option value="15">15</option>
+          <option value="16">16</option>
+          <option value="17">17</option>
+          <option value="18">18</option>
+          <option value="19">19</option>
+          <option value="20">20</option>
+        </select>
+        <span class="item-total">&#x24;0.00</span>
+      </div>
+      <div class="return-item">
+        <span class="item-name">White Bread - &#x24;8.50</span>
+        <select class="item-quantity" onchange="calculateTotals()">
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+          <option value="13">13</option>
+          <option value="14">14</option>
+          <option value="15">15</option>
+          <option value="16">16</option>
+          <option value="17">17</option>
+          <option value="18">18</option>
+          <option value="19">19</option>
+          <option value="20">20</option>
+        </select>
+        <span class="item-total">&#x24;0.00</span>
+      </div>
+      <div class="return-item">
+        <span class="item-name">Multi Bread - &#x24;8.50</span>
+        <select class="item-quantity" onchange="calculateTotals()">
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+          <option value="13">13</option>
+          <option value="14">14</option>
+          <option value="15">15</option>
+          <option value="16">16</option>
+          <option value="17">17</option>
+          <option value="18">18</option>
+          <option value="19">19</option>
+          <option value="20">20</option>
+        </select>
+        <span class="item-total">&#x24;0.00</span>
+      </div>
+      <div class="return-item">
+        <span class="item-name">Oat Bread - &#x24;8.50</span>
+        <select class="item-quantity" onchange="calculateTotals()">
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+          <option value="13">13</option>
+          <option value="14">14</option>
+          <option value="15">15</option>
+          <option value="16">16</option>
+          <option value="17">17</option>
+          <option value="18">18</option>
+          <option value="19">19</option>
+          <option value="20">20</option>
+        </select>
+        <span class="item-total">&#x24;0.00</span>
+      </div>
+      <div class="return-item">
+        <span class="item-name">Raisin Bread - &#x24;8.50</span>
+        <select class="item-quantity" onchange="calculateTotals()">
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+          <option value="13">13</option>
+          <option value="14">14</option>
+          <option value="15">15</option>
+          <option value="16">16</option>
+          <option value="17">17</option>
+          <option value="18">18</option>
+          <option value="19">19</option>
+          <option value="20">20</option>
+        </select>
+        <span class="item-total">&#x24;0.00</span>
+      </div>
+      <div class="return-item">
+        <span class="item-name">Quinoa Bread - &#x24;10.50</span>
+        <select class="item-quantity" onchange="calculateTotals()">
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+          <option value="13">13</option>
+          <option value="14">14</option>
+          <option value="15">15</option>
+          <option value="16">16</option>
+          <option value="17">17</option>
+          <option value="18">18</option>
+          <option value="19">19</option>
+          <option value="20">20</option>
+        </select>
+        <span class="item-total">&#x24;0.00</span>
+      </div>
+      <div class="return-item">
+        <span class="item-name">Nice Bun - &#x24;4.25</span>
+        <select class="item-quantity" onchange="calculateTotals()">
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+          <option value="13">13</option>
+          <option value="14">14</option>
+          <option value="15">15</option>
+          <option value="16">16</option>
+          <option value="17">17</option>
+          <option value="18">18</option>
+          <option value="19">19</option>
+          <option value="20">20</option>
+        </select>
+        <span class="item-total">&#x24;0.00</span>
+      </div>
+      <div class="return-item">
+        <span class="item-name">Multi Bun - &#x24;5.50</span>
+        <select class="item-quantity" onchange="calculateTotals()">
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+          <option value="13">13</option>
+          <option value="14">14</option>
+          <option value="15">15</option>
+          <option value="16">16</option>
+          <option value="17">17</option>
+          <option value="18">18</option>
+          <option value="19">19</option>
+          <option value="20">20</option>
+        </select>
+        <span class="item-total">&#x24;0.00</span>
+      </div>
+      <div class="return-item">
+        <span class="item-name">Pizza - &#x24;6.00</span>
+        <select class="item-quantity" onchange="calculateTotals()">
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+          <option value="13">13</option>
+          <option value="14">14</option>
+          <option value="15">15</option>
+          <option value="16">16</option>
+          <option value="17">17</option>
+          <option value="18">18</option>
+          <option value="19">19</option>
+          <option value="20">20</option>
+        </select>
+        <span class="item-total">&#x24;0.00</span>
+      </div>
+      <div class="return-item">
+        <span class="item-name">Sour - &#x24;6.00</span>
+        <select class="item-quantity" onchange="calculateTotals()">
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+          <option value="13">13</option>
+          <option value="14">14</option>
+          <option value="15">15</option>
+          <option value="16">16</option>
+          <option value="17">17</option>
+          <option value="18">18</option>
+          <option value="19">19</option>
+          <option value="20">20</option>
+        </select>
+        <span class="item-total">&#x24;0.00</span>
+      </div>
+      <div class="return-item">
+        <span class="item-name">Cinn Gran - &#x24;5.25</span>
+        <select class="item-quantity" onchange="calculateTotals()">
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+          <option value="13">13</option>
+          <option value="14">14</option>
+          <option value="15">15</option>
+          <option value="16">16</option>
+          <option value="17">17</option>
+          <option value="18">18</option>
+          <option value="19">19</option>
+          <option value="20">20</option>
+        </select>
+        <span class="item-total">&#x24;0.00</span>
+      </div>
+      <div class="return-item">
+        <span class="item-name">Cinn Cran Gran - &#x24;6.25</span>
+        <select class="item-quantity" onchange="calculateTotals()">
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+          <option value="13">13</option>
+          <option value="14">14</option>
+          <option value="15">15</option>
+          <option value="16">16</option>
+          <option value="17">17</option>
+          <option value="18">18</option>
+          <option value="19">19</option>
+          <option value="20">20</option>
+        </select>
+        <span class="item-total">&#x24;0.00</span>
+      </div>
+      <div class="return-item">
+        <span class="item-name">Pita Chips - &#x24;4.25</span> 
+        <select class="item-quantity" onchange="calculateTotals()">
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+          <option value="13">13</option>
+          <option value="14">14</option>
+          <option value="15">15</option>
+          <option value="16">16</option>
+          <option value="17">17</option>
+          <option value="18">18</option>
+          <option value="19">19</option>
+          <option value="20">20</option>
+        </select>
+        <span class="item-total">&#x24;0.00</span>
+      </div>
+    </div>
+
+    <div class="summary">
+      <p>Original: <span class="amount" id="originalAmount">&#x24;0.00</span></p>
+      <p>Returns: <span class="amount" id="returnsTotal">&#x24;0.00</span></p>
+      <p>Final: <span class="amount" id="finalAmount">&#x24;0.00</span></p>
+    </div>
+
+    <button class="print-report-btn" onclick="showReport()">Show Summary Report</button>
+    <button class="print-report-btn" onclick="resetForm()">Reset Form</button>
+    <button class="print-report-btn" onclick="showPriceEditor()">Edit Prices</button>
+  </div>
+</div>
+
+<div class="report-modal" id="reportModal">
+  <div class="report-content">
+    <span class="close-btn" onclick="hideReport()">&#xd7;</span>
+    <h2>Return Summary Report</h2>
+    <div id="reportItems"></div>
+    <hr>
+    <div class="summary">
+      <p>Invoice Total: <span class="amount" id="reportOriginal">&#x24;0.00</span></p>
+      <p>Returns Total: <span class="amount" id="reportReturns">&#x24;0.00</span></p>
+      <p>Final Amount: <span class="amount" id="reportFinal">&#x24;0.00</span></p>
+    </div>
+  </div>
+</div>
+
+<div class="report-modal" id="priceEditorModal">
+  <div class="report-content">
+    <span class="close-btn" onclick="hidePriceEditor()">&#xd7;</span>
+    <h2>Edit Prices &amp; Names</h2>
+    <div id="priceEditorItems"></div>
+    <button class="add-item-btn" onclick="addNewItem()">Add New Item</button>
+    <button class="print-report-btn" onclick="savePriceChanges()">Save Changes</button>
+  </div>
+</div>
+
+<script>const prices = {
+  'Brown Rice Bread - $8.50': 8.50,
+  'White Bread - $8.50': 8.50,
+  'Multi Bread - $8.50': 8.50,
+  'Oat Bread - $8.50': 8.50,
+  'Raisin Bread - $8.50': 8.50,
+  'Quinoa Bread - $10.50': 10.50,
+  'Nice Bun - $4.25': 4.25,
+  'Multi Bun - $5.50': 5.50,
+  'Pizza - $6.00': 6.00,
+  'Sour - $6.00': 6.00,
+  'Cinn Gran - $5.25': 5.25,
+  'Cinn Cran Gran - $6.25': 6.25,
+  'Pita Chips - $4.25': 4.25
+};
+function formatCurrency(amount) {
+  return '$' + amount.toFixed(2);
+}
+function calculateTotals() {
+  const originalAmount = parseFloat(document.getElementById('invoiceAmount').value) || 0;
+  let returnsTotal = 0;
+  document.querySelectorAll('.return-item').forEach(item => {
+    const itemName = item.querySelector('.item-name').textContent;
+    const quantity = parseInt(item.querySelector('.item-quantity').value) || 0;
+    if (prices[itemName]) {
+      const itemTotal = prices[itemName] * quantity;
+      returnsTotal += itemTotal;
+      item.querySelector('.item-total').textContent = formatCurrency(itemTotal);
+    }
+  });
+  document.getElementById('originalAmount').textContent = formatCurrency(originalAmount);
+  document.getElementById('returnsTotal').textContent = formatCurrency(returnsTotal);
+  document.getElementById('finalAmount').textContent = formatCurrency(Math.max(0, originalAmount - returnsTotal));
+}
+function showReport() {
+  const reportModal = document.getElementById('reportModal');
+  const reportItems = document.getElementById('reportItems');
+  reportItems.innerHTML = '';
+  let returnsTotal = 0;
+  const originalAmount = parseFloat(document.getElementById('invoiceAmount').value) || 0;
+  document.querySelectorAll('.return-item').forEach(item => {
+    const itemName = item.querySelector('.item-name').textContent;
+    const quantity = parseInt(item.querySelector('.item-quantity').value) || 0;
+    if (quantity > 0 && prices[itemName]) {
+      const itemTotal = prices[itemName] * quantity;
+      returnsTotal += itemTotal;
+      const reportItem = document.createElement('div');
+      reportItem.className = 'report-item';
+      reportItem.innerHTML = `
+        <span>${quantity} × ${itemName} - ${formatCurrency(itemTotal)}</span>
+        <span></span>
+      `;
+      reportItems.appendChild(reportItem);
+    }
+  });
+  document.getElementById('reportOriginal').textContent = formatCurrency(originalAmount);
+  document.getElementById('reportReturns').textContent = formatCurrency(returnsTotal);
+  document.getElementById('reportFinal').textContent = formatCurrency(Math.max(0, originalAmount - returnsTotal));
+  reportModal.style.display = 'flex';
+}
+function hideReport() {
+  document.getElementById('reportModal').style.display = 'none';
+}
+function resetForm() {
+  document.getElementById('invoiceAmount').value = '';
+  document.querySelectorAll('.item-quantity').forEach(select => {
+    select.value = '0';
+  });
+  document.querySelectorAll('.item-total').forEach(total => {
+    total.textContent = '$0.00';
+  });
+  calculateTotals();
+}
+function showPriceEditor() {
+  const modal = document.getElementById('priceEditorModal');
+  const editorItems = document.getElementById('priceEditorItems');
+  editorItems.innerHTML = '';
+  if (Object.entries(prices).length === 0) {
+    addNewItem();
+  } else {
+    Object.entries(prices).forEach(([itemName, price]) => {
+      const row = document.createElement('div');
+      row.className = 'price-editor-row';
+      const displayName = itemName.split(' - ')[0];
+      row.innerHTML = `
+        <input type="text" class="item-name-input" value="${displayName}">
+        <input type="number" class="item-price-input" value="${price}" step="0.01" min="0">
+        <span class="delete-item-btn" onclick="deleteItem(this)">−</span>
+      `;
+      editorItems.appendChild(row);
+    });
+  }
+  modal.style.display = 'flex';
+}
+function hidePriceEditor() {
+  document.getElementById('priceEditorModal').style.display = 'none';
+}
+function savePriceChanges() {
+  const rows = document.querySelectorAll('.price-editor-row');
+  const newPrices = {};
+  rows.forEach(row => {
+    const name = row.querySelector('.item-name-input').value;
+    const price = parseFloat(row.querySelector('.item-price-input').value);
+    if (name && !isNaN(price)) {
+      const key = `${name} - $${price.toFixed(2)}`;
+      newPrices[key] = price;
+    }
+  });
+  const returnItems = document.getElementById('returnItems');
+  const header = returnItems.querySelector('h3');
+  returnItems.innerHTML = '';
+  returnItems.appendChild(header);
+  Object.entries(newPrices).forEach(([key, price]) => {
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'return-item';
+    itemDiv.innerHTML = `
+      <span class="item-name">${key}</span>
+      <select class="item-quantity" onchange="calculateTotals()">
+        ${Array.from({
+      length: 21
+    }, (_, i) => `<option value="${i}">${i}</option>`).join('')}
+      </select>
+      <span class="item-total">$0.00</span>
+    `;
+    returnItems.appendChild(itemDiv);
+  });
+  Object.assign(prices, newPrices);
+  calculateTotals();
+  hidePriceEditor();
+}
+function addNewItem() {
+  const editorItems = document.getElementById('priceEditorItems');
+  const row = document.createElement('div');
+  row.className = 'price-editor-row';
+  row.innerHTML = `
+    <input type="text" class="item-name-input" value="New Item">
+    <input type="number" class="item-price-input" value="0.00" step="0.01" min="0">
+    <span class="delete-item-btn" onclick="deleteItem(this)">−</span>
+  `;
+  editorItems.appendChild(row);
+}
+function deleteItem(element) {
+  const row = element.closest('.price-editor-row');
+  if (row) {
+    row.remove();
+  }
+}
+document.getElementById('invoiceAmount').addEventListener('input', calculateTotals);</script>
+</body>
+</html>
